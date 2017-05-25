@@ -29,12 +29,10 @@ public class SelectorTests extends HelperTests{
 		KeyRecordIterator it = queryEngine.select(stmt, kq);
 		int count = 0;
 		while (it.hasNext()){
-			KeyRecord rec = it.next();
+			it.next();
 			count++;
-			//			System.out.println(rec);
 		}
 		it.close();
-		//		System.out.println(count);
 		Assert.assertEquals(1, count);
 	}
 
@@ -42,9 +40,12 @@ public class SelectorTests extends HelperTests{
 	public void selectAll() throws IOException {
 		KeyRecordIterator it = queryEngine.select(TestQueryEngine.NAMESPACE, TestQueryEngine.SET_NAME, null);
 		try {
+			int count = 0;
 			while (it.hasNext()){
-				KeyRecord rec = it.next();
+				it.next();
+				count++;
 			}
+			Assert.assertEquals(1000, count);
 		} finally {
 			it.close();
 		}
@@ -195,4 +196,26 @@ public class SelectorTests extends HelperTests{
 		}
 	}
 
+	@Test
+	public void selectWithGeoWithin() throws IOException{
+		double lon= -122.0;
+		double lat= 37.5;
+		double radius=50000.0;
+		String rgnstr = String.format("{ \"type\": \"AeroCircle\", "
+							  + "\"coordinates\": [[%.8f, %.8f], %f] }",
+							  lon, lat, radius);
+		Statement stmt = new Statement();
+		stmt.setNamespace("test");
+		stmt.setSetName(geoSet);
+		Qualifier qual1 = new Qualifier(geoSet, Qualifier.FilterOperation.GEO_WITHIN, Value.getAsGeoJSON(rgnstr));
+		KeyRecordIterator it = queryEngine.select(TestQueryEngine.NAMESPACE, TestQueryEngine.SET_NAME, null, qual1);
+		try {
+			while (it.hasNext()){
+				KeyRecord rec = it.next();
+				Assert.assertTrue(rec.record.generation >= 1);
+			}
+		} finally {
+			it.close();
+		}
+	}
 }
