@@ -91,11 +91,11 @@ public class Qualifier implements Map<String, Object>, Serializable {
 		internalMap.put(QUALIFIERS, qualifiers);
 		internalMap.put(OPERATION, operation);
 	}
-	
+
 	public Qualifier(String field, FilterOperation operation, Value value1) {
 		this(field, operation, Boolean.FALSE, value1);
 	}
-	
+
 	public Qualifier(String field, FilterOperation operation, Boolean ignoreCase, Value value1) {
 		this();
 		internalMap.put(FIELD, field);
@@ -115,6 +115,19 @@ public class Qualifier implements Map<String, Object>, Serializable {
 
 	public String getField() {
 		return (String) internalMap.get(FIELD);
+	}
+
+	public PredExp getFieldExpr(int valType) throws PredExpException {
+		switch (valType) {
+			case ParticleType.INTEGER:
+				return PredExp.integerBin(getField());
+			case ParticleType.STRING:
+				return PredExp.stringBin(getField());
+			case ParticleType.GEOJSON:
+				return PredExp.geoJSONBin(getField());
+			default:
+				throw new PredExpException("PredExp Unsupported Particle Type: " + valType);
+		}
 	}
 
 	public void asFilter(Boolean queryAsFilter) {
@@ -172,11 +185,11 @@ public class Qualifier implements Map<String, Object>, Serializable {
 				return null;
 		}
 	}
-	
+
 	private Filter geoWithinRadius(IndexCollectionType collectionType) {
 		return  Filter.geoContains(getField(), getValue1().toString());
 	}
-	
+
 	private Filter collectionContains(IndexCollectionType collectionType) {
 		Value val = getValue1();
 		int valType = val.getType();
@@ -192,7 +205,7 @@ public class Qualifier implements Map<String, Object>, Serializable {
 	private Filter collectionRange(IndexCollectionType collectionType) {
 		return Filter.range(getField(), collectionType, getValue1().toLong(), getValue2().toLong());
 	}
-	
+
 	public List<PredExp> toPredExp() throws PredExpException{
 		List<PredExp> rs = new ArrayList<PredExp>();
 		switch(getOperation()){
@@ -209,23 +222,23 @@ public class Qualifier implements Map<String, Object>, Serializable {
 		case IN: // Conver IN to a collection of or as Aerospike has not support for IN query
 			Value val = getValue1();
 			int valType = val.getType();
-			if(valType != ParticleType.LIST) 
+			if(valType != ParticleType.LIST)
 				throw new IllegalArgumentException("FilterOperation.IN expects List argument with type: " + ParticleType.LIST + ", but got: " + valType);
 			List<?> inList = (List<?>) val.getObject();
 			for(Object value : inList) rs.addAll(new Qualifier(this.getField(), FilterOperation.EQ, Value.get(value)).toPredExp());
-			rs.add(PredExp.or(inList.size()));		
+			rs.add(PredExp.or(inList.size()));
 			break;
 		case EQ:
 			val = getValue1();
 			valType = val.getType();
 			switch (valType) {
-				case ParticleType.INTEGER: 
-					rs.add(PredExp.integerBin(getField()));
+				case ParticleType.INTEGER:
+					rs.add(getFieldExpr(valType));
 					rs.add(PredExp.integerValue(val.toLong()));
 					rs.add(PredExp.integerEqual());
 					break;
 				case ParticleType.STRING:
-					rs.add(PredExp.stringBin(getField()));
+					rs.add(getFieldExpr(valType));
 					rs.add(PredExp.stringValue(val.toString()));
 					rs.add(PredExp.stringEqual());
 					break;
@@ -259,7 +272,7 @@ public class Qualifier implements Map<String, Object>, Serializable {
 
 			rs.addAll(Arrays.asList(valToPredExp(getValue1())));
 			rs.add(PredExp.geoJSONWithin());
-			
+
 			break;
 		case LIST_CONTAINS:
 		case MAP_KEYS_CONTAINS:
@@ -267,7 +280,7 @@ public class Qualifier implements Map<String, Object>, Serializable {
 		case LIST_BETWEEN:
 		case MAP_KEYS_BETWEEN:
 		case MAP_VALUES_BETWEEN:
-		case START_WITH:			
+		case START_WITH:
 		case ENDS_WITH:
 		case CONTAINING:
 		default:
@@ -275,25 +288,28 @@ public class Qualifier implements Map<String, Object>, Serializable {
 		}
 		return rs;
 	}
-	
-	private PredExp[] valToPredExp(Value val) throws PredExpException{
-		switch (val.getType()) {
-			case ParticleType.INTEGER:
-				return new PredExp[]{
-					PredExp.integerBin(getField()),
-					PredExp.integerValue(val.toLong())};
-			case ParticleType.STRING:
-				return new PredExp[]{
-						PredExp.stringBin(getField()),
-						PredExp.stringValue(val.toString())};
-			case ParticleType.GEOJSON:
-				return new PredExp[]{
-						PredExp.geoJSONBin(getField()),
-						PredExp.geoJSONValue(val.toString())};
-			default:
-				throw new PredExpException("PredExp Unsupported Particle Type: " + val.getType());
-		}		
-	}
+
+    private PredExp[] valToPredExp(Value val) throws PredExpException {
+        int valType = val.getType();
+        switch (valType) {
+            case ParticleType.INTEGER:
+                return new PredExp[]{
+                        getFieldExpr(valType),
+                        PredExp.integerValue(val.toLong())};
+            case ParticleType.STRING:
+                return new PredExp[]{
+                        getFieldExpr(valType),
+                        PredExp.stringValue(val.toString())};
+            case ParticleType.GEOJSON:
+                return new PredExp[]{
+                        getFieldExpr(valType),
+                        PredExp.geoJSONValue(val.toString())};
+            default:
+                throw new PredExpException("PredExp Unsupported Particle Type: " + val.getType());
+        }
+    }
+
+
 
 	public String luaFilterString(){
 		String value1 = luaValueString(getValue1());
