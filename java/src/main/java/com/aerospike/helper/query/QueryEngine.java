@@ -258,7 +258,7 @@ public class QueryEngine implements Closeable {
 		 */
 		for (int i = 0; i < qualifiers.length; i++) {
 			Qualifier qualifier = qualifiers[i];
-		
+
 			if(qualifier == null) continue;
 			if(qualifier.getOperation()==Qualifier.FilterOperation.AND){
 				for(Qualifier q: qualifier.getQualifiers()){
@@ -278,7 +278,7 @@ public class QueryEngine implements Closeable {
 				}
 			}
 		}
-		
+
 		try {
 			PredExp[] predexps;
 			predexps = buildPredExp(qualifiers).toArray(new PredExp[0]);
@@ -288,7 +288,7 @@ public class QueryEngine implements Closeable {
 				if(null == node){
 					rs = client.query(queryPolicy, stmt);
 				}else{
-					rs = client.queryNode(queryPolicy, stmt, node);					
+					rs = client.queryNode(queryPolicy, stmt, node);
 				}
 				return new KeyRecordIterator(stmt.getNamespace(), rs);
 			}else{
@@ -521,7 +521,7 @@ public class QueryEngine implements Closeable {
 				}
 			}
 		}
-		
+
 		if(qCount>1) pes.add(PredExp.and(qCount));
 		return pes;
 	}
