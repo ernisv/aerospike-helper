@@ -64,6 +64,7 @@ public class SelectorTests extends HelperTests{
 				Assert.assertTrue(age >= 28 && age <= 29);
 			}
 		} finally {
+			this.client.dropIndex(null, TestQueryEngine.NAMESPACE, TestQueryEngine.SET_NAME, "age_index");
 			it.close();
 		}
 	}
@@ -110,6 +111,7 @@ public class SelectorTests extends HelperTests{
 				Assert.assertTrue(age >= 25 && age <= 29);
 			}
 		} finally {
+			this.client.dropIndex(null, TestQueryEngine.NAMESPACE, TestQueryEngine.SET_NAME, "age_index_selector");
 			it.close();
 		}
 	}
@@ -129,6 +131,7 @@ public class SelectorTests extends HelperTests{
 				Assert.assertTrue(age >= 28 && age <= 29);
 			}
 		} finally {
+			this.client.dropIndex(null, TestQueryEngine.NAMESPACE, TestQueryEngine.SET_NAME, "age_index");
 			it.close();
 		}
 	}
@@ -149,6 +152,7 @@ public class SelectorTests extends HelperTests{
 				Assert.assertTrue("green"==rec.record.getString("color") ||(age >= 28 && age <= 29));
 			}
 		} finally {
+			this.client.dropIndex(null, TestQueryEngine.NAMESPACE, TestQueryEngine.SET_NAME, "age_index");
 			it.close();
 		}
 	}
@@ -177,6 +181,7 @@ public class SelectorTests extends HelperTests{
 			}
 			Assert.assertTrue(has25);
 		} finally {
+			this.client.dropIndex(null, TestQueryEngine.NAMESPACE, TestQueryEngine.SET_NAME, "age_index");
 			it.close();
 		}
 	}
