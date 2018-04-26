@@ -3,7 +3,6 @@ package com.aerospike.helper.collections;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Test;
@@ -11,13 +10,15 @@ import org.junit.Test;
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CollectionsTimeSeries {
 
 	public static final String NAMESPACE = "test";
 	public static final String SET = "time_series";
 
-	protected static Logger log = Logger.getLogger(CollectionsTimeSeries.class);
+	protected static Logger log = LoggerFactory.getLogger(CollectionsTimeSeries.class);
 	private AerospikeClient client;
 
 	//	@Before

@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
-
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Bin;
@@ -51,6 +49,8 @@ import com.aerospike.client.task.RegisterTask;
 import com.aerospike.helper.model.Index;
 import com.aerospike.helper.model.Module;
 import com.aerospike.helper.model.Namespace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class provides a multi-filter query engine that
@@ -65,7 +65,7 @@ public class QueryEngine implements Closeable {
 
 	protected static final String QUERY_MODULE = "as_utility"; //DO NOT use decimal places in the module name
 	protected static final String AS_UTILITY_PATH = QUERY_MODULE + ".lua";
-	protected static Logger log = Logger.getLogger(QueryEngine.class);
+	protected static Logger log = LoggerFactory.getLogger(QueryEngine.class);
 	protected AerospikeClient client;
 	protected Map<String, Index> indexCache;
 	protected Map<String, Module> moduleCache;
