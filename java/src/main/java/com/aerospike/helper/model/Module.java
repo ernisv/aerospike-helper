@@ -1,6 +1,8 @@
 package com.aerospike.helper.model;
 
 import gnu.crypto.util.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -11,8 +13,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
-
 /**
  * This class represents a UDF module
  * registered with the cluster
@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
  */
 public class Module {
 
-	private static Logger log = Logger.getLogger(Module.class);
+	private static Logger log = LoggerFactory.getLogger(Module.class);
 
 	private String name;
 	protected Map<String, String> values;

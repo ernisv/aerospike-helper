@@ -21,13 +21,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.query.KeyRecord;
 import com.aerospike.client.query.RecordSet;
 import com.aerospike.client.query.ResultSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Iterator for traversing a collection of KeyRecords
@@ -40,7 +40,7 @@ public class KeyRecordIterator implements Iterator<KeyRecord>, Closeable {
 	private static final String DIGEST = "digest";
 	private static final String EXPIRY = "expiry";
 	private static final String GENERATION = "generation";
-	private static Logger log = Logger.getLogger(KeyRecordIterator.class);
+	private static Logger log = LoggerFactory.getLogger(KeyRecordIterator.class);
 	private RecordSet recordSet;
 	private ResultSet resultSet;
 	private Iterator<KeyRecord> recordSetIterator;

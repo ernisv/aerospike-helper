@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -26,6 +25,8 @@ import com.aerospike.client.Value;
 import com.aerospike.client.cdt.ListOperation;
 import com.aerospike.client.policy.ClientPolicy;
 import com.aerospike.helper.query.TestQueryEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("deprecation")
 public class CollectionsLargeList {
@@ -35,7 +36,7 @@ public class CollectionsLargeList {
 
 	private AerospikeClient client;
 
-	protected static Logger log = Logger.getLogger(LargeList.class);
+	protected static Logger log = LoggerFactory.getLogger(LargeList.class);
 
 	public CollectionsLargeList ()
 	{

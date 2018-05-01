@@ -15,10 +15,11 @@
  */
 package com.aerospike.helper.log4j;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.MDC;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * Integration tests for {@link AerospikeLog4jAppender}.
@@ -29,7 +30,7 @@ public class AerospikeLog4jAppenderIntegrationTests {
 
 	static final String NAME = AerospikeLog4jAppenderIntegrationTests.class.getName();
 
-	Logger log = Logger.getLogger(NAME);
+	Logger log = LoggerFactory.getLogger(NAME);
 	
 
 	@Before
