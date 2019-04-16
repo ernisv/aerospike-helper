@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2012-2017 Aerospike, Inc.
  *
  * Portions may be licensed to Aerospike, Inc. under one or more contributor
@@ -16,9 +16,8 @@
  */
 package com.aerospike.helper.collections;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.AerospikeException;
@@ -28,6 +27,7 @@ import com.aerospike.client.Record;
 import com.aerospike.client.Value;
 import com.aerospike.client.cdt.ListOperation;
 import com.aerospike.client.policy.WritePolicy;
+import com.aerospike.client.util.*;
 
 /**
  * An implementation of LargeList using standard KV operations.
@@ -55,6 +55,8 @@ public class LargeList {
 	private Value binName;
 	private String binNameString;
 
+	private static final int VALUE_BYTES_FOR_KEY = 256;
+
 	/**
 	 * Initialize large list operator.
 	 * <p>
@@ -73,20 +75,44 @@ public class LargeList {
 		this.binNameString = this.binName.toString();
 	}
 
+	private byte[] keyForBytes(byte[] bytes) {
+        int usedBytes = Math.min(bytes.length, VALUE_BYTES_FOR_KEY);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(usedBytes + 4);
+	    DataOutputStream dos = new DataOutputStream(bos);
+
+        try {
+            dos.write(bytes, 0, usedBytes);
+            dos.writeInt(Arrays.hashCode(bytes));
+        } catch (IOException e) {
+            throw new RuntimeException("Creating key for large list element", e);
+        }
+
+	    return bos.toByteArray();
+    }
+
+	private byte[] keyForValue(Value value) {
+        if (value instanceof Value.MapValue) {
+            Map map = (Map) value.getObject();
+            return keyForBytes(map.get("key").toString().getBytes());
+        } else if (value instanceof Value.BytesValue) {
+            byte[] bytes = (byte[]) value.getObject();
+            return keyForBytes(bytes);
+        } else {
+            int bytesSize = value.estimateSize();
+            byte[] buffer = new byte[bytesSize];
+            value.write(buffer, 0);
+            return keyForBytes(buffer);
+        }
+    }
+
 	@SuppressWarnings("rawtypes")
 	private Key makeSubKey(Value value) {
-		Key subKey;
-		String valueString;
-		if (value instanceof Value.MapValue) {
-			Map map = (Map) value.getObject();
-			valueString = map.get("key").toString();
-		} else {
-			valueString = value.toString();
-		}
-		
-		String subKeyString = String.format("%s::%s", this.key.userKey.toString(), valueString);
-		subKey = new Key(this.key.namespace, this.key.setName, subKeyString);
-		return subKey;
+        byte[] userKeyBytes = keyForValue(this.key.userKey);
+        byte[] valueKeyBytes = keyForValue(value);
+        byte[] subKeyBytes = new byte[userKeyBytes.length + valueKeyBytes.length];
+        System.arraycopy(userKeyBytes, 0, subKeyBytes, 0, userKeyBytes.length);
+        System.arraycopy(valueKeyBytes, 0, subKeyBytes, userKeyBytes.length, valueKeyBytes.length);
+        return new Key(this.key.namespace, this.key.setName, subKeyBytes);
 	}
 
 	private Key[] makeSubKeys(List<Value> values) {
